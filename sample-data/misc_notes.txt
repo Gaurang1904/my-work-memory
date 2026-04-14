@@ -1,0 +1,3 @@
+Cleaned up frontend layout issues for the dashboard and updated project documentation.
+Organized onboarding notes and polished developer docs for internal use.
+Reviewed UI copy and basic styling fixes unrelated to backend infrastructure.

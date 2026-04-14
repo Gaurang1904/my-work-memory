@@ -1,0 +1,62 @@
+from unittest.mock import patch
+
+from app.models.chunk import Chunk
+from app.models.document import Document
+from app.services.retrieval import retrieve_chunks
+
+
+class DummyResult:
+    def __init__(self, rows):
+        self._rows = rows
+
+    def all(self):
+        return self._rows
+
+
+class DummyDB:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def execute(self, _stmt):
+        return DummyResult(self.rows)
+
+
+def _make_doc(doc_id: str, title: str) -> Document:
+    doc = Document(title=title, source_type="pdf", raw_text="x")
+    doc.id = doc_id
+    return doc
+
+
+def _make_chunk(index: int, text: str) -> Chunk:
+    chunk = Chunk(document_id="00000000-0000-0000-0000-000000000000", chunk_index=index, chunk_text=text, embedding=[0.0])
+    return chunk
+
+
+def test_retrieve_chunks_dedupes_duplicate_text_across_duplicate_documents():
+    doc_a = _make_doc("00000000-0000-0000-0000-000000000001", "Internship Report 2.pdf")
+    doc_b = _make_doc("00000000-0000-0000-0000-000000000002", "Internship Report 2.pdf")
+    shared_text = "Built backend APIs for reporting workflows."
+    rows = [
+        (_make_chunk(0, shared_text), doc_a, 0.11),
+        (_make_chunk(0, shared_text), doc_b, 0.12),
+    ]
+
+    with patch("app.services.retrieval.EmbeddingService.embed_query", return_value=[0.1, 0.2]):
+        results = retrieve_chunks(DummyDB(rows), "backend work", None, top_k=5)
+
+    assert len(results) == 1
+
+
+def test_experience_query_prefers_resume_timeline_chunk():
+    report_doc = _make_doc("00000000-0000-0000-0000-000000000011", "Internship_Report.pdf")
+    resume_doc = _make_doc("00000000-0000-0000-0000-000000000012", "Resume.pdf")
+    rows = [
+        (_make_chunk(0, "Transitioned from intern to full-time around February 2026.",  ), report_doc, 0.10),
+        (_make_chunk(1, "Experience AI/ML Engineer Apr 2025 - Aug 2025 Blockchain & AI Engineer Aug 2025 - Present", ), resume_doc, 0.18),
+    ]
+
+    with patch("app.services.retrieval.EmbeddingService.embed_query", return_value=[0.1, 0.2]):
+        results = retrieve_chunks(DummyDB(rows), "how many years of work ex do you have?", None, top_k=1)
+
+    assert len(results) == 1
+    assert results[0][1].title == "Resume.pdf"

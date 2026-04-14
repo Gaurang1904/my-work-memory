@@ -1,0 +1,3 @@
+Built Redis-backed queue processing for relayer jobs and background task execution.
+Worked on retry handling for queue workers and improved observability for relayer failures.
+Tested backend job processing paths for wallet-related automation tasks.
