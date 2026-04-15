@@ -1,3 +1,0 @@
-Worked on backend APIs for wallet reporting and internship report generation.
-Implemented FastAPI endpoints for document upload, retrieval, and reporting workflows.
-Improved metadata handling for project and company level filtering in backend services.
