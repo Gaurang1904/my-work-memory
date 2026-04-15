@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/public/public.css?v=4" />
+  <link rel="stylesheet" href="/static/public/public.css?v=5" />
 </head>
 <body>
   <main class="app-shell">
@@ -17,18 +17,9 @@
         <h1>Ask about my internship work.</h1>
       </div>
       <div class="topbar-actions">
-        <button id="toggle-report" class="ghost" type="button">Report Tool</button>
         <a href="/admin" class="ghost link-button">Admin</a>
       </div>
     </header>
-
-    <section id="report-panel" class="report-panel hidden">
-      <form id="public-report-form" class="report-form">
-        <input type="text" id="public-report-type" value="final_internship_report" required />
-        <textarea id="public-report-topic" rows="3" placeholder="Backend internship work summary" required></textarea>
-        <button type="submit">Generate Report</button>
-      </form>
-    </section>
 
     <section class="chat-panel">
       <div id="chat-thread" class="chat-thread"></div>
@@ -42,6 +33,6 @@
     </section>
   </main>
 
-  <script src="/static/public/public.js?v=4"></script>
+  <script src="/static/public/public.js?v=5"></script>
 </body>
 </html>

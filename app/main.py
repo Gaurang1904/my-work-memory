@@ -1,15 +1,17 @@
 import logging
 from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.db import check_db_connection, init_db
 from app.routes.ask import router as ask_router
+from app.routes.auth import router as auth_router
 from app.routes.report import router as report_router
 from app.routes.upload import router as upload_router
+from app.services.auth import get_admin_session
 
 
 settings = get_settings()
@@ -23,6 +25,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.include_router(upload_router)
 app.include_router(ask_router)
 app.include_router(report_router)
+app.include_router(auth_router)
 
 
 @app.on_event("startup")
@@ -53,6 +56,8 @@ def index() -> FileResponse:
     return FileResponse(PUBLIC_DIR / "index.html")
 
 
-@app.get("/admin")
-def admin() -> FileResponse:
+@app.get("/admin", response_model=None)
+def admin(request: Request):
+    if get_admin_session(request) is None:
+        return RedirectResponse(url="/admin/login", status_code=303)
     return FileResponse(ADMIN_DIR / "index.html")

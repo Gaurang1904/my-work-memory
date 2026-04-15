@@ -1,6 +1,5 @@
 const thread = document.getElementById("chat-thread");
 const questionInput = document.getElementById("public-question");
-const reportPanel = document.getElementById("report-panel");
 const chatHistory = [];
 
 const MAX_HISTORY_MESSAGES = 6;
@@ -83,10 +82,6 @@ async function publicRequest(url, options = {}) {
   return payload;
 }
 
-document.getElementById("toggle-report").addEventListener("click", () => {
-  reportPanel.classList.toggle("hidden");
-});
-
 document.getElementById("public-ask-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const question = questionInput.value.trim();
@@ -109,29 +104,6 @@ document.getElementById("public-ask-form").addEventListener("submit", async (eve
     appendHistory("assistant", payload.answer || "");
   } catch (error) {
     replaceWithError(statusNode, "Question failed", error.message);
-  }
-});
-
-document.getElementById("public-report-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const reportType = document.getElementById("public-report-type").value.trim();
-  const topic = document.getElementById("public-report-topic").value.trim();
-  if (!reportType || !topic) {
-    return;
-  }
-
-  addUserMessage(`Generate report: ${topic}`);
-  const statusNode = addAssistantStatus("Generating report");
-
-  try {
-    const payload = await publicRequest("/generate-report", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ report_type: reportType, topic }),
-    });
-    replaceWithReport(statusNode, payload);
-  } catch (error) {
-    replaceWithError(statusNode, "Report failed", error.message);
   }
 });
 

@@ -20,6 +20,9 @@ async function requestJson(url, options = {}) {
   }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      window.location.href = "/admin/login";
+    }
     throw new Error(payload.detail || payload.raw || `Request failed with status ${response.status}`);
   }
 

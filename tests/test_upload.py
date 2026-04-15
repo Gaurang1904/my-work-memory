@@ -3,8 +3,10 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
+from app.config import get_settings
 from app.db import get_db
 from app.main import app
+from app.services.auth import create_session_token
 
 
 class DummyDB:
@@ -58,6 +60,11 @@ def test_upload_rolls_back_when_embeddings_fail():
         ],
     ), patch("app.routes.upload.EmbeddingService.embed_texts", side_effect=RuntimeError("embedding failure")):
         with TestClient(app) as client:
+            settings = get_settings()
+            client.cookies.set(
+                settings.session_cookie_name,
+                create_session_token(settings.admin_username, settings),
+            )
             response = client.post(
                 "/upload",
                 files={"file": ("sample.txt", BytesIO(b"Worked on APIs"), "text/plain")},

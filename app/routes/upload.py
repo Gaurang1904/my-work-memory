@@ -11,6 +11,7 @@ from app.db import get_db
 from app.models.chunk import Chunk
 from app.models.document import Document
 from app.schemas.upload import LocalIngestRequest, RepoFileInfo, UploadResponse
+from app.services.auth import require_admin_api
 from app.services.chunker import chunk_text
 from app.services.embeddings import EmbeddingService
 from app.services.extractor import detect_source_type, extract_text
@@ -35,6 +36,7 @@ async def upload_document(
     document_date: date | None = Form(default=None),
     tags: str | None = Form(default=None),
     db: Session = Depends(get_db),
+    _admin: dict = Depends(require_admin_api),
 ) -> UploadResponse:
     file_bytes = await file.read()
     if not file_bytes:
@@ -54,7 +56,7 @@ async def upload_document(
 
 
 @router.get("/repo-files", response_model=list[RepoFileInfo])
-def list_repo_files() -> list[RepoFileInfo]:
+def list_repo_files(_admin: dict = Depends(require_admin_api)) -> list[RepoFileInfo]:
     RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     files: list[RepoFileInfo] = []
@@ -73,7 +75,11 @@ def list_repo_files() -> list[RepoFileInfo]:
 
 
 @router.post("/ingest-local", response_model=UploadResponse)
-def ingest_local_document(payload: LocalIngestRequest, db: Session = Depends(get_db)) -> UploadResponse:
+def ingest_local_document(
+    payload: LocalIngestRequest,
+    db: Session = Depends(get_db),
+    _admin: dict = Depends(require_admin_api),
+) -> UploadResponse:
     path = _resolve_repo_file(payload.file_name)
     file_bytes = path.read_bytes()
     if not file_bytes:
@@ -93,7 +99,10 @@ def ingest_local_document(payload: LocalIngestRequest, db: Session = Depends(get
 
 
 @router.post("/ingest-all-local", response_model=list[UploadResponse])
-def ingest_all_local_documents(db: Session = Depends(get_db)) -> list[UploadResponse]:
+def ingest_all_local_documents(
+    db: Session = Depends(get_db),
+    _admin: dict = Depends(require_admin_api),
+) -> list[UploadResponse]:
     files = list_repo_files()
     responses: list[UploadResponse] = []
 

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.schemas.report import ReportRequest, ReportResponse
+from app.services.auth import require_admin_api
 from app.services.generation_errors import GenerationTemporarilyUnavailableError
 from app.services.report_generator import generate_report
 
@@ -14,7 +15,11 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("", response_model=ReportResponse)
-def build_report(payload: ReportRequest, db: Session = Depends(get_db)) -> ReportResponse:
+def build_report(
+    payload: ReportRequest,
+    db: Session = Depends(get_db),
+    _admin: dict = Depends(require_admin_api),
+) -> ReportResponse:
     try:
         response = generate_report(db, payload.report_type, payload.topic, payload.filters)
         logger.info("Report generated with %s sources", len(response.sources))
