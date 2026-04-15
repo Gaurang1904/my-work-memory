@@ -1,10 +1,12 @@
 import os
-from sqlalchemy import create_engine, MetaData
-from dotenv import load_dotenv
 
-# Load the database URL from your .env file
+from dotenv import load_dotenv
+from sqlalchemy import MetaData, create_engine
+
+
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
+
 
 if __name__ == "__main__":
     print("Connecting to database...")

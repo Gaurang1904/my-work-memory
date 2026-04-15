@@ -15,6 +15,8 @@ from app.routes.upload import router as upload_router
 settings = get_settings()
 logger = logging.getLogger(__name__)
 STATIC_DIR = Path(__file__).resolve().parent / "static"
+PUBLIC_DIR = STATIC_DIR / "public"
+ADMIN_DIR = STATIC_DIR / "admin"
 
 app = FastAPI(title=settings.app_name, debug=settings.debug)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -48,9 +50,9 @@ def health() -> dict[str, str]:
 
 @app.get("/")
 def index() -> FileResponse:
-    return FileResponse(STATIC_DIR / "public.html")
+    return FileResponse(PUBLIC_DIR / "index.html")
 
 
 @app.get("/admin")
 def admin() -> FileResponse:
-    return FileResponse(STATIC_DIR / "index.html")
+    return FileResponse(ADMIN_DIR / "index.html")
