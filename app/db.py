@@ -32,4 +32,8 @@ def check_db_connection() -> None:
 
 
 def init_db() -> None:
+    # Imported for its side effect: registers all ORM models on Base.metadata
+    # so create_all() sees every table. Deferred to avoid a circular import.
+    import app.models  # noqa: F401
+
     Base.metadata.create_all(bind=engine)
