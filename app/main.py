@@ -1,9 +1,6 @@
 import logging
-from pathlib import Path
 
-from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI
 
 from app.config import get_settings
 from app.db import check_db_connection, init_db
@@ -11,17 +8,12 @@ from app.routes.ask import router as ask_router
 from app.routes.auth import router as auth_router
 from app.routes.report import router as report_router
 from app.routes.upload import router as upload_router
-from app.services.auth import get_admin_session
 
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
-STATIC_DIR = Path(__file__).resolve().parent / "static"
-PUBLIC_DIR = STATIC_DIR / "public"
-ADMIN_DIR = STATIC_DIR / "admin"
 
 app = FastAPI(title=settings.app_name, debug=settings.debug)
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.include_router(upload_router)
 app.include_router(ask_router)
 app.include_router(report_router)
@@ -52,12 +44,5 @@ def health() -> dict[str, str]:
 
 
 @app.get("/")
-def index() -> FileResponse:
-    return FileResponse(PUBLIC_DIR / "index.html")
-
-
-@app.get("/admin", response_model=None)
-def admin(request: Request):
-    if get_admin_session(request) is None:
-        return RedirectResponse(url="/admin/login", status_code=303)
-    return FileResponse(ADMIN_DIR / "index.html")
+def index() -> dict[str, str]:
+    return {"service": settings.app_name, "status": "ok", "docs": "/docs"}

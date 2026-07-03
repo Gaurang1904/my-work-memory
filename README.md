@@ -53,7 +53,10 @@ uvicorn app.main:app --reload
 - `POST /ask`
 - `POST /generate-report`
 - `GET /health`
-- `GET /`
+- `GET /` (JSON service info)
+- `POST /admin/login`, `GET /admin/logout` (admin session for protected ingest/report endpoints)
+
+This is an API-only backend (no bundled web UI); interactive docs are at `/docs`.
 
 ## Notes
 
@@ -61,4 +64,4 @@ uvicorn app.main:app --reload
 - The app no longer creates the `vector` extension at runtime; that belongs in DB setup.
 - Gemini embeddings are configured to 1536 dimensions here to match the current pgvector schema.
 - This is intentionally plain RAG first. LangChain and LangGraph should come after the core ingestion and retrieval pipeline proves itself.
-- Put repo-managed source files in `project-data/raw` and ingest them from the built-in frontend or the local ingest API.
+- Put repo-managed source files in `project-data/raw` and ingest them via the local ingest API (`POST /upload/ingest-local`).
