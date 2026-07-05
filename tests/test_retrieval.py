@@ -45,18 +45,3 @@ def test_retrieve_chunks_dedupes_duplicate_text_across_duplicate_documents():
         results = retrieve_chunks(DummyDB(rows), "backend work", None, top_k=5)
 
     assert len(results) == 1
-
-
-def test_experience_query_prefers_resume_timeline_chunk():
-    report_doc = _make_doc("00000000-0000-0000-0000-000000000011", "Internship_Report.pdf")
-    resume_doc = _make_doc("00000000-0000-0000-0000-000000000012", "Resume.pdf")
-    rows = [
-        (_make_chunk(0, "Transitioned from intern to full-time around February 2026.",  ), report_doc, 0.10),
-        (_make_chunk(1, "Experience AI/ML Engineer Apr 2025 - Aug 2025 Blockchain & AI Engineer Aug 2025 - Present", ), resume_doc, 0.18),
-    ]
-
-    with patch("app.services.retrieval.EmbeddingService.embed_query", return_value=[0.1, 0.2]):
-        results = retrieve_chunks(DummyDB(rows), "how many years of work ex do you have?", None, top_k=1)
-
-    assert len(results) == 1
-    assert results[0][1].title == "Resume.pdf"

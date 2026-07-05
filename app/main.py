@@ -5,19 +5,13 @@ from fastapi import FastAPI
 from app.config import get_settings
 from app.db import check_db_connection, init_db
 from app.routes.ask import router as ask_router
-from app.routes.auth import router as auth_router
-from app.routes.report import router as report_router
-from app.routes.upload import router as upload_router
 
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title=settings.app_name, debug=settings.debug)
-app.include_router(upload_router)
 app.include_router(ask_router)
-app.include_router(report_router)
-app.include_router(auth_router)
 
 
 @app.on_event("startup")

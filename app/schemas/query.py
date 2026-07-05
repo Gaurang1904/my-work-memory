@@ -12,16 +12,11 @@ class QueryFilters(BaseModel):
     tags: list[str] = Field(default_factory=list)
 
 
-class ChatMessage(BaseModel):
-    role: str
-    content: str
-
-
 class AskRequest(BaseModel):
     question: str
-    history: list[ChatMessage] = Field(default_factory=list)
-    filters: QueryFilters | None = None
-    top_k: int | None = None
+    # Pass the same session_id across turns to continue a conversation. Omit it
+    # (or send null) to start a fresh thread; the response echoes the id to reuse.
+    session_id: str | None = None
 
 
 class SourceReference(BaseModel):
@@ -36,3 +31,4 @@ class SourceReference(BaseModel):
 class AskResponse(BaseModel):
     answer: str
     sources: list[SourceReference]
+    session_id: str

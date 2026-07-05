@@ -47,21 +47,28 @@ uvicorn app.main:app --reload
 
 ## Endpoints
 
-- `POST /upload`
-- `GET /upload/repo-files`
-- `POST /upload/ingest-local`
-- `POST /ask`
-- `POST /generate-report`
+- `POST /ask` — ask a question; answered by the LangGraph agent (semantic search + structured project/skill tools) with grounded, cited responses
 - `GET /health`
 - `GET /` (JSON service info)
-- `POST /admin/login`, `GET /admin/logout` (admin session for protected ingest/report endpoints)
 
 This is an API-only backend (no bundled web UI); interactive docs are at `/docs`.
+
+## Ingestion
+
+Content lives under `project-data/` (gitignored, local only) and is loaded with a
+local script — there is no HTTP upload endpoint:
+
+```bash
+python -m scripts.ingest --reset
+```
+
+- `project-data/raw/` — resume, profile, notes (PDF/DOCX/TXT/MD) → prose chunks
+- `project-data/projects/<slug>.md` — a `Project` row + prose
+- `project-data/skills.yaml` — `Skill` rows
 
 ## Notes
 
 - The app initializes tables on startup.
-- The app no longer creates the `vector` extension at runtime; that belongs in DB setup.
-- Gemini embeddings are configured to 1536 dimensions here to match the current pgvector schema.
-- This is intentionally plain RAG first. LangChain and LangGraph should come after the core ingestion and retrieval pipeline proves itself.
-- Put repo-managed source files in `project-data/raw` and ingest them via the local ingest API (`POST /upload/ingest-local`).
+- The `vector` extension is created in DB setup (`sql/init.sql`), not at runtime.
+- Gemini embeddings are 1536-d to match the pgvector schema.
+- `POST /ask` runs a LangGraph agent; retrieval internals (chunking, embeddings) are hand-built.

@@ -20,13 +20,7 @@ class Settings(BaseSettings):
     chunk_size: int = 1000
     chunk_overlap: int = 150
     retrieval_top_k: int = 5
-    max_report_chunks: int = 12
     retrieval_max_distance: float | None = 0.45
-    admin_username: str = "admin"
-    admin_password: str = ""
-    admin_password_hash: str = ""
-    session_secret: str = ""
-    session_cookie_name: str = "pda_admin_session"
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -46,11 +40,6 @@ class Settings(BaseSettings):
     @field_validator("gemini_api_key")
     @classmethod
     def validate_gemini_api_key(cls, value: str) -> str:
-        return value.strip()
-
-    @field_validator("admin_username", "admin_password", "admin_password_hash", "session_secret", "session_cookie_name")
-    @classmethod
-    def validate_auth_strings(cls, value: str) -> str:
         return value.strip()
 
     @field_validator("chunk_overlap")

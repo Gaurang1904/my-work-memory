@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.schemas.query import AskRequest, AskResponse
+from app.services.agent import answer_with_agent
 from app.services.generation_errors import GenerationTemporarilyUnavailableError
-from app.services.qa import answer_question
 
 
 router = APIRouter(prefix="/ask", tags=["ask"])
@@ -15,9 +15,11 @@ logger = logging.getLogger(__name__)
 
 @router.post("", response_model=AskResponse)
 def ask_question(payload: AskRequest, db: Session = Depends(get_db)) -> AskResponse:
-    logger.info("Question received: question=%r top_k=%s", payload.question, payload.top_k)
+    """Answer a question via the LangGraph agent: the LLM chooses tools (semantic
+    search + structured project/skill lookups) and returns a grounded, cited answer."""
+    logger.info("Question received: question=%r session=%s", payload.question, payload.session_id)
     try:
-        response = answer_question(db, payload.question, payload.history, payload.filters, payload.top_k)
+        response = answer_with_agent(db, payload.question, payload.session_id)
         logger.info("Question answered with %s sources", len(response.sources))
         return response
     except HTTPException:
