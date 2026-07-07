@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     retrieval_top_k: int = 5
     retrieval_max_distance: float | None = 0.45
 
+    # Comma-separated list of browser origins allowed to call the API (CORS).
+    cors_allow_origins: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
