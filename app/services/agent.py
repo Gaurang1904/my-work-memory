@@ -203,13 +203,28 @@ def _build_tools(db: Session, sources_sink: list[SourceReference]):
     return [search_knowledge, get_project, list_projects, check_skill, list_skills]
 
 
-def _build_graph(db: Session, sources_sink: list[SourceReference]):
-    tools = _build_tools(db, sources_sink)
-    model = ChatGoogleGenerativeAI(
+def _build_model():
+    """Chat model for the agent. Any provider works as long as it supports tool
+    calling; the prompt, tools, graph, and memory are provider-independent."""
+    if settings.llm_provider == "openai_compatible":
+        from langchain_openai import ChatOpenAI
+
+        return ChatOpenAI(
+            model=settings.llm_model,
+            api_key=settings.llm_api_key,
+            base_url=settings.llm_base_url or None,
+            temperature=0.2,
+        )
+    return ChatGoogleGenerativeAI(
         model=settings.gemini_chat_model,
         google_api_key=settings.gemini_api_key,
         temperature=0.2,
-    ).bind_tools(tools)
+    )
+
+
+def _build_graph(db: Session, sources_sink: list[SourceReference]):
+    tools = _build_tools(db, sources_sink)
+    model = _build_model().bind_tools(tools)
 
     def agent_node(state: AgentState) -> dict:
         # System prompt is injected per call (not persisted); the thread stores
