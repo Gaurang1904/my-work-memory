@@ -17,6 +17,14 @@ class Settings(BaseSettings):
     gemini_embedding_model: str = "gemini-embedding-001"
     gemini_embedding_dimensions: int | None = 1536
 
+    # Chat model provider. "openai_compatible" covers Groq, OpenRouter, Together,
+    # vLLM, and OpenAI itself - only the base URL and model name differ.
+    # Embeddings always use Gemini (changing them requires a re-ingest).
+    llm_provider: Literal["gemini", "openai_compatible"] = "gemini"
+    llm_api_key: str = ""
+    llm_base_url: str = ""
+    llm_model: str = ""
+
     chunk_size: int = 1000
     chunk_overlap: int = 150
     retrieval_top_k: int = 5
@@ -38,6 +46,13 @@ class Settings(BaseSettings):
         value = value.strip()
         if not value:
             raise ValueError("DATABASE_URL is missing.")
+        # Managed hosts (Render, Heroku, Railway) hand out postgres:// or
+        # postgresql:// URLs; this app's driver needs the psycopg3 dialect.
+        # Normalize so the env var can be pasted verbatim.
+        if value.startswith("postgres://"):
+            value = "postgresql+psycopg://" + value[len("postgres://"):]
+        elif value.startswith("postgresql://"):
+            value = "postgresql+psycopg://" + value[len("postgresql://"):]
         return value
 
     @field_validator("gemini_api_key")

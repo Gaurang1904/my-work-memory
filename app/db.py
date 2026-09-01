@@ -36,4 +36,10 @@ def init_db() -> None:
     # so create_all() sees every table. Deferred to avoid a circular import.
     import app.models  # noqa: F401
 
+    # pgvector must exist before create_all builds the Vector columns. Locally
+    # docker-entrypoint runs sql/init.sql; on a managed host nothing does, so
+    # create it here (idempotent, no superuser needed on supported hosts).
+    with engine.begin() as connection:
+        connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+
     Base.metadata.create_all(bind=engine)
